@@ -1,8 +1,38 @@
 TYPO3 Character Set Converter
 =============================
 
-This is a script to convert MySQL tables from latin1 to utf8 without actually converting the contents.
-This is often needed for TYPO3 sites which have been writing UTF-8 content into Latin1 tables.
+What does it do?
+----------------
+
+This is a script to convert MySQL tables from Latin1 to UTF-8 without actually converting the contents.
+It will change the character set definition in the schema of your tables, while the contents remain the same.
+
+This very special action is often needed for TYPO3 sites which have been writing UTF-8 content into Latin1 tables for some time.
+
+Why is this needed?
+-------------------
+
+When converting a table whose fields are declared as Latin1, MySQL will always automatically convert the contents of the table as well.
+In a perfect setup, this is of course a correct behaviour. Why would you want to break your table definitions?
+
+The magic of this script is only needed when the schema of a table IS already broken.
+
+Let's make an example:
+
+* The columns of a table are declared as Latin1 according to the schema definition.
+* But the content is actually UTF-8 because TYPO3 had been writing UTF-8 content into this database.
+* Now if you convert this table to UTF-8, the result will be double-UTF-8-encoded content.
+* There is no way to make MySQL convert the table definition without converting the content at the same time.
+
+What the script does is to convert the table in two steps:
+
+1. From the original character set to binary
+2. From binary to UTF-8
+
+With this simple workaround, MySQL will leave the contents unchanged because binary content does not need to be converted.
+
+Additionally to this, the script will do some more steps: Changing the character set of a table to binary will also change all varchar fields to varbinary, text fields to blob, etc. This is not intended and needs to be fixed.
+The script takes care of this by restoring the original schema (except the character set definition, of course...).
 
 Important: How to check if this is needed
 -----------------------------------------
@@ -25,23 +55,23 @@ To be sure if you need this tool, check the following points:
     | character_set_database   | utf8                       |
     | character_set_filesystem | binary                     |
     | character_set_results    | utf8                       |
-    | character_set_server     | latin1                     |
+    | character_set_server     | utf8                       |
     | character_set_system     | utf8                       |
     | character_sets_dir       | /usr/share/mysql/charsets/ |
     +--------------------------+----------------------------+
     8 rows in set (0.00 sec)
 
-  Take a look at client, connection and results character sets and make sure that they match.
+  Take a look at client, connection and results character sets and make sure that they match. (The others don't really matter since they most likely apply to newly created databases or tables only.)
   Compare this with $TYPO3_CONF_VARS['BE']['forceCharset'] in your TYPO3 localconf.php.
-* If all use latin1, you can simply convert the database with standard MySQL tools:
+* If all use Latin1, you can simply convert the database with standard MySQL tools:
 
   ::
 
     mysql> ALTER DATABASE mydatabase CONVERT TO CHARACTER SET utf8;
 
-* If all use utf8, then there is most likely nothing more for you to do.
-* If forceCharset is set to "utf-8" but the database is using latin1, then your setup is most likely affected and needs to be fixed as explained below.
-* In all cases, you will need to change $TYPO3_CONF_VARS['BE']['forceCharset'] to 'utf-8' at the end of the process (except when using TYPO3 4.7 or later which is forced to using UTF-8).
+* If all use UTF-8, then there is most likely nothing more for you to do.
+* If $TYPO3_CONF_VARS['BE']['forceCharset'] is set to "utf-8" but the database is using Latin1, then your setup is most likely affected by the mentioned problem, and needs to be fixed as explained below.
+* In all cases, you will need to change $TYPO3_CONF_VARS['BE']['forceCharset'] to "utf-8" at the end of the process (except when using TYPO3 4.7 or later which is forced to using UTF-8).
 
 How to use
 ----------
