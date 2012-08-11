@@ -7,7 +7,7 @@ MYSQL_HOSTNAME=
 MYSQL_DATABASE=
 
 #TABLES="table1 table2 ..."
-TABLES=
+TABLES="*"
 
 # Parse parameters, if any
 CONFIG=$1
@@ -42,6 +42,10 @@ fi
 if [ -z "$TABLES" ] || [ -z "$MYSQL_DATABASE" ]; then
 	echo "Error: Configuration is missing. Please change the settings at the beginning of this file."
 	exit 1
+fi
+
+if [ "$TABLES" = "*" ]; then
+	TABLES=$(do_mysql "SHOW TABLES LIKE '%';")
 fi
 
 for TABLE in $TABLES; do
