@@ -23,7 +23,7 @@ do_mysqldump() {
 # Wrapper for the mysql client
 do_mysql() {
 	QUERY=$1
-	echo "$QUERY" | mysql -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -h $MYSQL_HOSTNAME $MYSQL_DATABASE
+	echo "$QUERY" | mysql -u $MYSQL_USERNAME -p$MYSQL_PASSWORD -h $MYSQL_HOSTNAME --skip-column-names $MYSQL_DATABASE
 	return $?
 }
 
