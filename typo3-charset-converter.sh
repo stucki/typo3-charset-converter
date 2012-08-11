@@ -9,6 +9,9 @@ MYSQL_DATABASE=
 #TABLES="table1 table2 ..."
 TABLES=
 
+# Parse parameters, if any
+CONFIG=$1
+
 # Wrapper for mysqldump
 do_mysqldump() {
 	TABLE=$1
@@ -24,6 +27,17 @@ do_mysql() {
 	return $?
 }
 
+
+if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
+	# Match "typo_db" configuration lines and strip everything except the name and value parts
+	TMPVAL=$(grep "typo_db" $CONFIG | sed "s/\"/'/g; s/';.*/'/g" | grep -v "typo_db_extTableDef_script")
+
+	# Assign values, only use the last match
+	MYSQL_USERNAME=$(echo "$TMPVAL" | grep "typo_db_user" | tail -n 1 | cut -d\' -f 2)
+	MYSQL_PASSWORD=$(echo "$TMPVAL" | grep "typo_db_pass" | tail -n 1 | cut -d\' -f 2)
+	MYSQL_HOSTNAME=$(echo "$TMPVAL" | grep "typo_db_host" | tail -n 1 | cut -d\' -f 2)
+	MYSQL_DATABASE=$(echo "$TMPVAL" | grep -v "typo_db_"  | tail -n 1 | cut -d\' -f 2)
+fi
 
 if [ -z "$TABLES" ] || [ -z $MYSQL_DATABASE]; then
 	echo "Error: Configuration is missing. Please change the settings at the beginning of this file."
