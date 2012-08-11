@@ -39,7 +39,7 @@ if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	MYSQL_DATABASE=$(echo "$TMPVAL" | grep -v "typo_db_"  | tail -n 1 | cut -d\' -f 2)
 fi
 
-if [ -z "$TABLES" ] || [ -z $MYSQL_DATABASE]; then
+if [ -z "$TABLES" ] || [ -z "$MYSQL_DATABASE" ]; then
 	echo "Error: Configuration is missing. Please change the settings at the beginning of this file."
 	exit 1
 fi
