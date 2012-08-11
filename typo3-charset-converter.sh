@@ -27,8 +27,10 @@ do_mysql() {
 	return $?
 }
 
+# Read MySQL credentials from a TYPO3 configuration file
+match_against_typo3() {
+	CONFIG=$1
 
-if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	# Match "typo_db" configuration lines and strip everything except the name and value parts
 	TMPVAL=$(grep "typo_db" $CONFIG | sed "s/\"/'/g; s/';.*/'/g" | grep -v "typo_db_extTableDef_script")
 
@@ -37,6 +39,15 @@ if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
 	MYSQL_PASSWORD=$(echo "$TMPVAL" | grep "typo_db_pass" | tail -n 1 | cut -d\' -f 2)
 	MYSQL_HOSTNAME=$(echo "$TMPVAL" | grep "typo_db_host" | tail -n 1 | cut -d\' -f 2)
 	MYSQL_DATABASE=$(echo "$TMPVAL" | grep -v "typo_db_"  | tail -n 1 | cut -d\' -f 2)
+}
+
+
+if [ -n "$CONFIG" ] && [ -f "$CONFIG" ]; then
+	case $(basename $CONFIG) in
+		"localconf.php")
+			match_against_typo3 $CONFIG
+		;;
+	esac
 fi
 
 if [ -z "$TABLES" ] || [ -z "$MYSQL_DATABASE" ]; then
