@@ -73,6 +73,22 @@ for TABLE in $TABLES; do
 
 	echo -en "Convert table $TABLE... \t"
 
+	# First, convert all CHAR fields into VARCHAR due to an ugly bug(?) in MySQL which
+	# results in empty CHAR fields to become HEX(0000)
+	# (happens reproducibly in TYPO3 be_users.lang for example)
+	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | grep -v "KEY" | while read LINE; do
+		# Skip all lines except "char" fields
+		echo $LINE | grep -qi " char" || continue
+
+		# Convert the fields into varchar(). This will be changed back again to
+		# char() at the end of this script.
+		LINE=$(echo $LINE | sed "s/ char/ varchar/")
+
+		COLUMN=$(echo "$LINE" | awk '{print $1}')
+		#echo "Converting $COLUMN..."
+		do_mysql "ALTER TABLE $TABLE MODIFY $LINE;"
+	done
+
 	# Perform a two-step conversion via binary charset to avoid conversion of the data
 	#echo -en "to binary... \t"
 	do_mysql "ALTER TABLE $TABLE CONVERT TO CHARACTER SET binary;"
