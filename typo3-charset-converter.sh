@@ -76,7 +76,7 @@ for TABLE in $TABLES; do
 	# First, convert all CHAR fields into VARCHAR due to an ugly bug(?) in MySQL which
 	# results in empty CHAR fields to become HEX(0000)
 	# (happens reproducibly in TYPO3 be_users.lang for example)
-	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | grep -v "KEY" | while read LINE; do
+	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | egrep -v "KEY|FULLTEXT" | while read LINE; do
 		# Skip all lines except "char" fields
 		echo $LINE | grep -qi " char" || continue
 
@@ -100,7 +100,7 @@ for TABLE in $TABLES; do
 	echo "Fix the schema..."
 
 	# Fix the schema (varbinary => vartext etc.)
-	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | grep -v "KEY" | while read LINE; do
+	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | egrep -v "KEY|FULLTEXT" | while read LINE; do
 		COLUMN=$(echo "$LINE" | awk '{print $1}')
 		#echo "Converting $COLUMN..."
 		do_mysql "ALTER TABLE $TABLE MODIFY $LINE;"
