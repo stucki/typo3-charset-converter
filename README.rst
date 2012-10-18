@@ -4,23 +4,23 @@ TYPO3 Character Set Converter
 What does it do?
 ----------------
 
-This is a script to convert MySQL tables from Latin1 to UTF-8 without actually converting the contents.
-It will change the character set definition in the schema of your tables, while the contents remain the same.
+This is a script to convert MySQL tables from Latin1 to UTF-8.
 
+Other than most converter scripts, it allows to change the character set definition in the schema of your tables, while the contents remain the same.
 This very special action is often needed for TYPO3 sites which have been writing UTF-8 content into Latin1 tables for some time.
+
+If needed, it can of course also convert everything, including content.
 
 Why is this needed?
 -------------------
 
-When converting a table whose fields are declared as Latin1, MySQL will always automatically convert the contents of the table as well.
-In a perfect setup, this is of course a correct behaviour. Why would you want to break your table definitions?
+When converting a table from one character set to another one, MySQL will always automatically convert the contents of the table as well.
+Under normal conditions, this is of course a correct behaviour and should not be circumvented.
 
-The magic of this script is only needed when the schema of a table IS already broken.
-
-Let's make an example:
+The magic of this script is only needed when the schema of a table IS already broken. Example:
 
 * The columns of a table are declared as Latin1 according to the schema definition.
-* But the content is actually UTF-8 because TYPO3 had been writing UTF-8 content into this database.
+* But the content is actually UTF-8 because TYPO3 was writing UTF-8 content into this database.
 * Now if you convert this table to UTF-8, the result will be double-UTF-8-encoded content.
 * There is no way to make MySQL convert the table definition without converting the content at the same time.
 
@@ -63,27 +63,25 @@ To be sure if you need this tool, check the following points:
 
   Take a look at client, connection and results character sets and make sure that they match. (The others don't really matter since they most likely apply to newly created databases or tables only.)
   Compare this with $TYPO3_CONF_VARS['BE']['forceCharset'] in your TYPO3 localconf.php.
-* If all use Latin1, you can simply convert the database with standard MySQL tools:
-
-  ::
-
-    mysql> ALTER DATABASE mydatabase CONVERT TO CHARACTER SET utf8;
-
+* If all use Latin1 and $TYPO3_CONF_VARS['BE']['forceCharset'] is set to "utf-8", then your setup is most likely affected by the mentioned problem, and needs to be fixed as explained below (convert only the scheme but no content).
+* If all use Latin1, you can make a normal conversion (scheme and content). For this to work, set CONVERT_DATA=1 at the beginning of the script and run it like explained below.
 * If all use UTF-8, then there is most likely nothing more for you to do.
-* If $TYPO3_CONF_VARS['BE']['forceCharset'] is set to "utf-8" but the database is using Latin1, then your setup is most likely affected by the mentioned problem, and needs to be fixed as explained below.
-* In all cases, you will need to change $TYPO3_CONF_VARS['BE']['forceCharset'] to "utf-8" at the end of the process (except when using TYPO3 4.7 or later which is forced to using UTF-8).
+* In all cases, you will need to change $TYPO3_CONF_VARS['BE']['forceCharset'] to "utf-8" at the end of the process (except when using TYPO3 4.7 or later which is forced to use UTF-8).
 
 How to use
 ----------
 
 1. Download the script
-2. Edit the database credentials and set which tables need to be changed
+2. Optionally: Edit the database credentials and set which tables need to be changed
 3. Run the script
 
   ::
 
     $ ./typo3-charset-converter.sh
+    # Alternative
+    $ ./typo3-charset-converter.sh /path/to/typo3conf/localconf.php
 
+In the 2nd command, the charset converter tries to read the DB credentials automatically from localconf.php.
 Backup dumps of each table will be created in the current working directory.
 
 Having questions or feedback? Let me know at michael.stucki@typo3.org.
