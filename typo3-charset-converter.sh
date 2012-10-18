@@ -101,6 +101,9 @@ for TABLE in $TABLES; do
 
 	# Fix the schema (varbinary => vartext etc.)
 	cat ${TABLE}_schema.sql | sed "s/,$//" | grep "^  " | egrep -v "KEY|FULLTEXT" | while read LINE; do
+		# Make sure that columns don't use a different character set than the rest of the table
+		LINE=$(echo "$LINE" | sed "s/ \(CHARACTER SET\|COLLATE\) [^ ]*//g")
+
 		COLUMN=$(echo "$LINE" | awk '{print $1}')
 		#echo "Converting $COLUMN..."
 		do_mysql "ALTER TABLE $TABLE MODIFY $LINE;"
