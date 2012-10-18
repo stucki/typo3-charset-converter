@@ -12,6 +12,12 @@ TABLES="*"
 # Parse parameters, if any
 CONFIG=$1
 
+# Set this to 1 to change the table content and not only the scheme.
+# Otherwise, content is converted to binary in between which makes MySQL forget about conversion of data.
+# CONVERT_DATA=0: <source charset> => binary => UTF-8
+# CONVERT_DATA=1: <source charset> => UTF-8
+CONVERT_DATA=0
+
 # Wrapper for mysqldump
 do_mysqldump() {
 	TABLE=$1
@@ -90,8 +96,12 @@ for TABLE in $TABLES; do
 	done
 
 	# Perform a two-step conversion via binary charset to avoid conversion of the data
-	#echo -en "to binary... \t"
-	do_mysql "ALTER TABLE $TABLE CONVERT TO CHARACTER SET binary;"
+
+	if [ $CONVERT_DATA = 0 ]; then
+		#echo -en "to binary... \t"
+		do_mysql "ALTER TABLE $TABLE CONVERT TO CHARACTER SET binary;"
+	fi
+
 	#echo -en "to utf8... \t"
 	do_mysql "ALTER TABLE $TABLE CONVERT TO CHARACTER SET utf8;"
 
