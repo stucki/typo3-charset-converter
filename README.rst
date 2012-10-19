@@ -81,7 +81,7 @@ How to use
     # Alternative
     $ ./typo3-charset-converter.sh /path/to/typo3conf/localconf.php
 
-In the 2nd command, the charset converter tries to read the DB credentials automatically from localconf.php.
+In the 2nd example, the charset converter tries to read the database credentials automatically from localconf.php.
 Backup dumps of each table will be created in the current working directory.
 
 Having questions or feedback? Let me know at michael.stucki@typo3.org.
